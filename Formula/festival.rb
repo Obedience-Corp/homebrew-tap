@@ -5,12 +5,12 @@
 class Festival < Formula
   desc "Festival Methodology CLI suite (fest + camp)"
   homepage "https://github.com/Obedience-Corp/festival"
-  version "0.2.1"
+  version "0.1.0"
   license "BUSL-1.1"
 
   on_macos do
-    url "https://github.com/Obedience-Corp/festival/releases/download/v0.2.1/festival-0.2.1-macOS-all.tar.gz"
-    sha256 "4090038c8d9214d67a3a837efaa50b3c6c5fca45ed959ebaa6822399a67d8a7f"
+    url "https://github.com/Obedience-Corp/festival/releases/download/v0.1.0/festival-0.1.0-macOS-all.tar.gz"
+    sha256 "c3ca76f58980f6196f7a863795a04410d1cbf5da7821a8fb42ea12b81e5ca06a"
 
     define_method(:install) do
       bin.install "fest"
@@ -23,8 +23,8 @@ class Festival < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/Obedience-Corp/festival/releases/download/v0.2.1/festival-0.2.1-linux-x86_64.tar.gz"
-      sha256 "9f6c5aecff8bfdb791f43dcc69f83cb8766d7f415fe8aebc9d1aa7dbfff07f0c"
+      url "https://github.com/Obedience-Corp/festival/releases/download/v0.1.0/festival-0.1.0-linux-x86_64.tar.gz"
+      sha256 "03868c1ad7fbfe554ef409cb945c7b73c4135486f425054d0b248e862ce2393d"
       define_method(:install) do
         bin.install "fest"
         bin.install "camp"
@@ -34,8 +34,8 @@ class Festival < Formula
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/Obedience-Corp/festival/releases/download/v0.2.1/festival-0.2.1-linux-arm64.tar.gz"
-      sha256 "324248a3a69e763c6f56bae273e514a3aaa5cd0836332f0bfae61ac237b90f73"
+      url "https://github.com/Obedience-Corp/festival/releases/download/v0.1.0/festival-0.1.0-linux-arm64.tar.gz"
+      sha256 "d2bc802a473f151ef4904292fe74782d8f734c1c5e27b7523c513f8c988390dd"
       define_method(:install) do
         bin.install "fest"
         bin.install "camp"
