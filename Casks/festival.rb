@@ -3,7 +3,7 @@ cask "festival" do
   name "festival"
   desc "Festival Methodology CLI suite (fest + camp)"
   homepage "https://github.com/Obedience-Corp/festival"
-  version "0.1.1"
+  version "0.1.2"
 
   livecheck do
     skip "Auto-generated on release."
@@ -17,17 +17,17 @@ cask "festival" do
 
   on_macos do
     url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-macOS-all.tar.gz"
-    sha256 "1ccaf50e2dab28ac8443bd65c547d659c18fae4b4fe2ab46b514020f4c527f14"
+    sha256 "b34ebe83c1b08c832c891e73b2783ff2300f01867383807607da803d2f0b7db3"
   end
 
   on_linux do
     on_intel do
       url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-linux-x86_64.tar.gz"
-      sha256 "8aa64b42645a90ff6773bd2377b4968020830226e62d5c7ea6188e47dd790401"
+      sha256 "d60ec9869988abde3295f305f19813e6620e960fbfd811d4ef8e9b7882bcffd8"
     end
     on_arm do
       url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-linux-arm64.tar.gz"
-      sha256 "31b950dfc0f35742ff7fe50e7dda9826ce38e9b1bae9277f3c0b55424e13c4c7"
+      sha256 "0a517cbd6680c150f8fbdbb5e9ca623cb8b371f0a38284e6e5c3dab1be65b871"
     end
   end
 
