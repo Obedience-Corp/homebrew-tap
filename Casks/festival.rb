@@ -3,17 +3,17 @@ cask "festival" do
   version "0.2.14"
 
   on_macos do
-    sha256 "e4a2e2a4007548f9e42f476364f398ab1b89b33d3ba987010e5d13d61352ff27"
+    sha256 "befd20476e33e53e012ad6d7bbf761c4f780c3b7a4af43d9a55f236f0a34683b"
     url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-macOS-all.tar.gz"
   end
 
   on_linux do
     on_intel do
-      sha256 "87ec9ba05c95d2f34de93bf670d7cd8c00508e17509fefa5e078d770615fa0e1"
+      sha256 "0fc721c84bd4c33359b8a3dbc6c03ebb0661e68da10e0a12d3491127aaea67f5"
       url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-linux-x86_64.tar.gz"
     end
     on_arm do
-      sha256 "27956dbcebe73958f676e90ed4d5536a73c35b1c585dbc8734404b1ac30b5900"
+      sha256 "51a552c76b7c71b704967f5168e97b1b9f8ad36558e1c9b9e49bde558b2c95a6"
       url "https://github.com/Obedience-Corp/festival/releases/download/v#{version}/festival-#{version}-linux-arm64.tar.gz"
     end
   end
