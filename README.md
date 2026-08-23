@@ -9,12 +9,14 @@ brew tap Obedience-Corp/tap
 # Homebrew 6+: trust the org tap once
 brew trust Obedience-Corp/tap
 brew install agent-stream-dbg
+brew install gaze
 ```
 
 ### Packages
 
 | Package | Type | Install |
 |---------|------|---------|
+| `gaze` | Formula (CLI) | `brew install gaze` |
 | `agent-stream-dbg` | Formula (CLI/TUI) | `brew install agent-stream-dbg` |
 | `festival` | Formula (CLI) | `brew install festival` |
 | `festival` | Cask (app) | `brew install --cask festival` |
@@ -40,5 +42,6 @@ After a new GitHub release with platform assets
 
 ## Links
 
+- [gaze](https://github.com/Obedience-Corp/gaze)
 - [agent-stream-dbg](https://github.com/Obedience-Corp/agent-stream-dbg)
 - [festival](https://github.com/Obedience-Corp/festival)
