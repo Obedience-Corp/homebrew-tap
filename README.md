@@ -10,15 +10,13 @@ brew tap Obedience-Corp/tap
 brew trust Obedience-Corp/tap
 brew install agent-stream-dbg
 brew install gaze
-# Linux (Homebrew on Linux): v0.2.0 is macOS-only
-brew install --HEAD gaze
 ```
 
 ### Packages
 
 | Package | Type | Install |
 |---------|------|---------|
-| `gaze` | Formula (CLI) | macOS: `brew install gaze`. Linux: `brew install --HEAD gaze` until the next tag |
+| `gaze` | Formula (CLI) | `brew install gaze` (macOS and Linux) |
 | `agent-stream-dbg` | Formula (CLI/TUI) | `brew install agent-stream-dbg` |
 | `festival` | Formula (CLI) | `brew install festival` |
 | `festival` | Cask (app) | `brew install --cask festival` |
