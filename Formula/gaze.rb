@@ -3,11 +3,10 @@
 class Gaze < Formula
   desc "Give your agents eyes. Native PTZ. No vendor app."
   homepage "https://github.com/Obedience-Corp/gaze"
-  url "https://github.com/Obedience-Corp/gaze/archive/refs/tags/v0.2.0.tar.gz"
-  sha256 "1d0da709b8a3a543fbb26d3ae326f4a06ba451e7df030a46369201e563b5da60"
+  url "https://github.com/Obedience-Corp/gaze/archive/refs/tags/v0.3.0.tar.gz"
+  sha256 "3aa68a62438cb2f7235d0215113120a2e74bafa944d0af7c8973c147e754021e"
   license "Apache-2.0"
-  # Linux V4L2 lands in gaze#5 (linux-uvc). Flip this to "main" after that merges.
-  head "https://github.com/Obedience-Corp/gaze.git", branch: "linux-uvc"
+  head "https://github.com/Obedience-Corp/gaze.git", branch: "main"
 
   depends_on "just" => :build
 
@@ -17,16 +16,6 @@ class Gaze < Formula
   end
 
   def install
-    if OS.linux? && !build.head?
-      odie <<~EOS
-        gaze v#{version} is macOS-only. On Linux (Homebrew):
-
-          brew install --HEAD Obedience-Corp/tap/gaze
-
-        The next tagged release that includes Linux will make `brew install gaze` work.
-      EOS
-    end
-
     if OS.linux?
       ENV.prepend_path "PKG_CONFIG_PATH", Formula["jpeg-turbo"].opt_lib/"pkgconfig"
     end
@@ -54,6 +43,6 @@ class Gaze < Formula
   end
 
   test do
-    assert_match(/\d+\.\d+\.\d+/, shell_output("#{bin}/gaze --version"))
+    assert_match "0.3.0", shell_output("#{bin}/gaze --version")
   end
 end
