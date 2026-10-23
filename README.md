@@ -18,8 +18,7 @@ brew install gaze
 |---------|------|---------|
 | `gaze` | Formula (CLI) | `brew install gaze` (macOS and Linux) |
 | `agent-stream-dbg` | Formula (CLI/TUI) | `brew install agent-stream-dbg` |
-| `festival` | Formula (CLI) | `brew install festival` |
-| `festival` | Cask (app) | `brew install --cask festival` |
+| `festival` | Cask (fest, camp, festival CLIs) | `brew install --cask obedience-corp/tap/festival` |
 | `camp-graph` | Cask (app) | `brew install --cask camp-graph` |
 
 ## Formula vs Cask
@@ -28,7 +27,7 @@ brew install gaze
 |--|-------------|----------|
 | For | CLIs, libraries, daemons, TUIs | macOS GUI `.app` bundles |
 | Install | `brew install name` | `brew install --cask name` |
-| This repo | `Formula/agent-stream-dbg.rb`, `Formula/festival.rb` | `Casks/festival.rb`, `Casks/camp-graph.rb` |
+| This repo | `Formula/agent-stream-dbg.rb` | `Casks/festival.rb`, `Casks/camp-graph.rb` |
 
 **agent-stream-dbg** is a terminal tool → **Formula**, not Cask.
 
