@@ -5,21 +5,21 @@
 class AgentStreamDbg < Formula
   desc "TUI debugger for multi-agent event streams (SSE, gRPC, ACP)"
   homepage "https://github.com/Obedience-Corp/agent-stream-dbg"
-  version "0.1.1"
+  version "0.2.0"
   license "Apache-2.0"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.1.1/agent-stream-dbg-0.1.1-macOS-x86_64.tar.gz"
-      sha256 "4b731503ce420ed287f4580530c476e949179326e938a3755d0ac174802cc0ec"
+      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.2.0/agent-stream-dbg-0.2.0-macOS-x86_64.tar.gz"
+      sha256 "b815f5019074554ddbb140e182bd004897cd690c934798bb27bfcd7f88f8f4c8"
 
       define_method(:install) do
         bin.install "agent-stream-dbg"
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.1.1/agent-stream-dbg-0.1.1-macOS-arm64.tar.gz"
-      sha256 "3253daaaba1811f3607361a6eaeade5c7ffacff4cd423cbf04245b7f96bf2e97"
+      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.2.0/agent-stream-dbg-0.2.0-macOS-arm64.tar.gz"
+      sha256 "51cc835b668c02754506916f27edd709e29f25e1ed420623e6288d682d5be4e9"
 
       define_method(:install) do
         bin.install "agent-stream-dbg"
@@ -29,15 +29,15 @@ class AgentStreamDbg < Formula
 
   on_linux do
     if Hardware::CPU.intel? && Hardware::CPU.is_64_bit?
-      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.1.1/agent-stream-dbg-0.1.1-linux-x86_64.tar.gz"
-      sha256 "8c5040dbd2d6836e38aff1b3c8980b4dc6d9dd34f13830d33ae374459975a315"
+      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.2.0/agent-stream-dbg-0.2.0-linux-x86_64.tar.gz"
+      sha256 "7eb69ad669ee2d18d851cd0bb3ddc5f9a233c891adf9722f470b86dfb8d21781"
       define_method(:install) do
         bin.install "agent-stream-dbg"
       end
     end
     if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
-      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.1.1/agent-stream-dbg-0.1.1-linux-arm64.tar.gz"
-      sha256 "6fc430cfc5c352857d4174f04756ef1ae310502dbee575529373df63c174731e"
+      url "https://github.com/Obedience-Corp/agent-stream-dbg/releases/download/v0.2.0/agent-stream-dbg-0.2.0-linux-arm64.tar.gz"
+      sha256 "c03ad5c1adaf4f1a7335fcbb64f37e801aed1756a18877b739009b1d90b44b22"
       define_method(:install) do
         bin.install "agent-stream-dbg"
       end
