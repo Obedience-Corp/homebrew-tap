@@ -31,19 +31,22 @@ def verify(output):
     Path(env["HOME"]).mkdir()
     env.pop("XDG_CONFIG_HOME", None)
     env.pop("XDG_CACHE_HOME", None)
+    for key in ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "DYLD_FALLBACK_LIBRARY_PATH"):
+        env.pop(key, None)
 
     def run(*args, cwd=output):
         command = [str(arg) for arg in args]
         print("+ " + " ".join(command), flush=True)
         result = subprocess.run(command, cwd=cwd, env=env, text=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=1200)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=1200)
         with (output / "verification.log").open("a") as log:
-            log.write("+ " + " ".join(command) + "\n" + result.stdout)
+            log.write("+ " + " ".join(command) + "\n" + result.stdout + result.stderr)
         if result.returncode:
-            print(result.stdout, flush=True)
+            print(result.stdout + result.stderr, flush=True)
             raise subprocess.CalledProcessError(result.returncode, command)
         return result.stdout.strip()
 
+    run("brew", "trust", "--tap", "obedience-corp/tap")
     installed = json.loads(run("brew", "info", "--json=v2", FORMULA))["formulae"][0]
     if installed["installed"]:
         raise ValueError("refusing to replace an installed Obey Voice; use a disposable runner")
@@ -70,7 +73,6 @@ def verify(output):
         if snapshot() != protected:
             raise ValueError("user data changed or model files were added")
 
-    run("brew", "trust", "--tap", "obedience-corp/tap")
     run("brew", "audit", "--strict", "--formula", FORMULA)
     # Fetch real public native assets; no upstream cache is seeded.
     run("brew", "install", "--build-bottle", "--formula", FORMULA)
