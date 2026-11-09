@@ -31,6 +31,14 @@ STT and Kokoro TTS. Settings, personas, sessions and model caches survive
 uninstall. The Samantha package in the personal tap remains independent.
 See the [Obey Voice release procedure](docs/obey-voice-release.md) for maintainers.
 
+The desktop app uses a separate `obey-voice-app` cask in this same tap. Its
+verification workflow is ready for the first signed and notarized app release;
+the cask file is generated from that verified release by the engine's
+`just release create` command. It is not installable until that first archive
+and cask are published. The eventual command is
+`brew install --cask obedience-corp/tap/obey-voice-app`.
+See [desktop cask releases](docs/obey-voice-desktop-release.md).
+
 | | **Formula** | **Cask** |
 |--|-------------|----------|
 | For | CLIs, libraries, daemons, TUIs | macOS GUI `.app` bundles |
