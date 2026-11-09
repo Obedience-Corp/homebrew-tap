@@ -1,5 +1,19 @@
 # Obey Voice release procedure
 
+Prefer `just release plan vX.Y.Z` followed by `just release create vX.Y.Z` from
+the Obey Voice engine repository. Complete physical release acceptance before
+invoking `create`; it authorizes publication and the tap merge. The coordinator
+creates/resumes the tap PR, waits for native tests, verifies staged/public bottles
+and honors repository review rules. The manual sequence below remains available
+for diagnosis.
+
+The workflow's dispatch modes are `build` (default), `verify` and `public`.
+`verify` also takes `release_tag=obey-voice-vX.Y.Z`. It installs the exact staged
+bottles whose checksums are in the formula. `public` requires a published release
+and installs through the real bottle URL with a fresh cache. Both modes test the
+installed package and verify uninstall/data retention. The versioned contract is
+`packaging/obey-voice-release.json`; update the engine adapter if it changes.
+
 Obey Voice uses prebuilt native archives from `Obedience-Corp/obey-voice`.
 The formula supports macOS 15+ arm64 and Linux x86_64 with glibc 2.39+.
 The upstream repository's `scripts/render_homebrew.py` generates the formula
@@ -28,8 +42,13 @@ only after verifying both public archives and their manifests.
    downloads, then merge the PR. Verify the public install, upgrade and uninstall
    and retained user data. Never merge formula URLs pointing to a draft release.
 
-The bottle-building workflow has read-only repository permissions and never
-publishes. Publication is a separate owner-controlled step. Do not overwrite
+Formula execution has read-only repository permissions and never publishes.
+GitHub requires write permission to read draft assets, so a separate dispatch-only
+download job receives that token. It performs no checkout and executes no
+repository code; it only downloads the requested draft's bottles and uploads
+them as short-lived workflow artifacts. Formula jobs receive no write token and
+verify those bytes against the checked-out formula. Publication is performed by
+the authorized release coordinator. Do not overwrite
 published bottles or downgrade a newer formula. For a later rebuild of the same
 upstream version, use Homebrew's revision/rebuild conventions and a distinct
 release asset identity; the initial-release harness currently exercises revision 1.
