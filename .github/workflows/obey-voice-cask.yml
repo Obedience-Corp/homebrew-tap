@@ -1,0 +1,72 @@
+name: Obey Voice desktop cask
+run-name: Obey Voice ${{ inputs.mode || 'verify' }} @ ${{ github.ref_name }}
+
+on:
+  pull_request:
+    paths:
+      - Casks/obey-voice-app.rb
+      - scripts/verify-obey-voice-cask.py
+      - scripts/test-obey-voice-cask.py
+      - packaging/obey-voice-cask.json
+      - .github/workflows/obey-voice-cask.yml
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify a proposed cask, or install the merged public cask
+        type: choice
+        options: [verify, public]
+        default: verify
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cask:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: Homebrew/actions/setup-homebrew@63a2d4d8d4193eab3e62b1b782ff3ab8408f5b29
+        with:
+          stable: true
+      - name: Cask verification failure paths
+        run: python3 scripts/test-obey-voice-cask.py
+      - name: Install exact tap revision
+        env:
+          TAP_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          tap="$(brew --repository)/Library/Taps/obedience-corp/homebrew-tap"
+          git -C "$tap" fetch origin "$TAP_REF"
+          git -C "$tap" checkout --detach "$TAP_REF"
+          test "$(git -C "$tap" rev-parse HEAD)" = "$TAP_REF"
+      - name: Audit and verify the published desktop app
+        env:
+          RELEASE_MODE: ${{ inputs.mode || 'verify' }}
+        run: |
+          if [[ -f Casks/obey-voice-app.rb ]]; then
+            python3 scripts/verify-obey-voice-cask.py --mode "$RELEASE_MODE" --output "$RUNNER_TEMP/cask-evidence"
+          elif [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            echo "Verification support only: first cask awaits a signed, notarized app release."
+          else
+            echo "No desktop cask exists; release verification cannot pass." >&2
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: obey-voice-cask-evidence
+          path: ${{ runner.temp }}/cask-evidence/evidence.json
+          if-no-files-found: warn
+          retention-days: 30
