@@ -18,10 +18,18 @@ brew install gaze
 |---------|------|---------|
 | `gaze` | Formula (CLI) | `brew install gaze` (macOS and Linux) |
 | `agent-stream-dbg` | Formula (CLI/TUI) | `brew install agent-stream-dbg` |
+| `obey-voice` | Formula (CLI) | `brew install obedience-corp/tap/obey-voice` (macOS 15+ arm64; Linux x86_64, glibc 2.39+) |
 | `festival` | Cask (fest, camp, festival CLIs) | `brew install --cask obedience-corp/tap/festival` |
 | `camp-graph` | Cask (app) | `brew install --cask camp-graph` |
 
 ## Formula vs Cask
+
+Obey Voice bundles its native speech libraries. Install a brain provider and
+download speech models explicitly after installation; Homebrew does not start
+services or download models. For the compiler-free speech path, select Parakeet
+STT and Kokoro TTS. Settings, personas, sessions and model caches survive
+uninstall. The Samantha package in the personal tap remains independent.
+See the [Obey Voice release procedure](docs/obey-voice-release.md) for maintainers.
 
 | | **Formula** | **Cask** |
 |--|-------------|----------|
