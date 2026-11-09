@@ -88,7 +88,7 @@ def verify(output):
     # Exercise a packaging revision upgrade without claiming application migration.
     formula.write_text(original.replace('  license "AGPL-3.0-only"',
                                         '  revision 1\n  license "AGPL-3.0-only"'))
-    run("brew", "upgrade", "--formula", FORMULA)
+    run("brew", "upgrade", "--build-from-source", "--formula", FORMULA)
     run("brew", "test", FORMULA)
     preserved()
     run("brew", "uninstall", "--force", "--formula", FORMULA)

@@ -2,6 +2,12 @@
 class ObeyVoice < Formula
   desc "Voice assistant for AI coding with local speech models"
   homepage "https://github.com/Obedience-Corp/obey-voice"
+
+  bottle do
+    root_url "https://github.com/Obedience-Corp/homebrew-tap/releases/download/obey-voice-v0.3.0"
+    sha256 cellar: :any, arm64_sequoia: "c7521df81808dd814b1567013befe069b45c1ae4d6e6ff1596b5d43e65f3d911"
+    sha256 cellar: :any, x86_64_linux:  "b84805f122ee3c2c244d565218f24941943b113a0f34b51cb49269167579b9ad"
+  end
   if OS.mac?
     url "https://github.com/Obedience-Corp/obey-voice/releases/download/v0.3.0/obey-voice-v0.3.0-macos-arm64.tar.gz"
     sha256 "2f928b6db81928884d3ad5d67ad7245eaed9a2b13924a13d7c9e5558a9fb7388"
