@@ -1,0 +1,67 @@
+name: Obey Voice bottles
+
+on:
+  pull_request:
+    paths:
+      - Formula/obey-voice.rb
+      - scripts/verify-obey-voice.py
+      - .github/workflows/obey-voice-bottles.yml
+  push:
+    branches: [obey-voice-release]
+    paths:
+      - Formula/obey-voice.rb
+      - scripts/verify-obey-voice.py
+      - .github/workflows/obey-voice-bottles.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bottles:
+    name: Bottle (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            platform: linux-amd64
+          - runner: macos-15
+            platform: macos-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: Homebrew/actions/setup-homebrew@63a2d4d8d4193eab3e62b1b782ff3ab8408f5b29
+      - name: Install exact tap revision
+        run: |
+          tap="$(brew --repository)/Library/Taps/obedience-corp/homebrew-tap"
+          mkdir -p "$(dirname "$tap")"
+          git clone --no-hardlinks "$GITHUB_WORKSPACE" "$tap"
+          git -C "$tap" remote set-url origin https://github.com/Obedience-Corp/homebrew-tap.git
+          test "$(git -C "$tap" rev-parse HEAD)" = "$(git rev-parse HEAD)"
+      - name: Build and verify production bottle
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+          HOMEBREW_NO_ANALYTICS: '1'
+        run: python3 scripts/verify-obey-voice.py --output "$GITHUB_WORKSPACE/bottle-evidence"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: obey-voice-bottle-${{ matrix.platform }}
+          path: |
+            bottle-evidence/bottles/*
+            bottle-evidence/evidence.json
+            bottle-evidence/verification.log
+          if-no-files-found: error
+          retention-days: 30
