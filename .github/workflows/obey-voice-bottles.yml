@@ -1,4 +1,5 @@
 name: Obey Voice bottles
+run-name: Obey Voice ${{ inputs.mode || 'build' }} @ ${{ github.ref_name }}
 
 on:
   pull_request:
@@ -6,6 +7,7 @@ on:
       - Formula/obey-voice.rb
       - scripts/verify-obey-voice.py
       - .github/workflows/obey-voice-bottles.yml
+      - packaging/obey-voice-release.json
   push:
     branches: [obey-voice-release]
     paths:
@@ -13,6 +15,13 @@ on:
       - scripts/verify-obey-voice.py
       - .github/workflows/obey-voice-bottles.yml
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Build bottles, verify staged release bottles, or test public installation
+        type: choice
+        options: [build, verify, public]
+        default: build
+        required: true
 
 permissions:
   contents: read
@@ -55,11 +64,13 @@ jobs:
           git -C "$tap" fetch origin "$TAP_REF"
           git -C "$tap" checkout --detach "$TAP_REF"
           test "$(git -C "$tap" rev-parse HEAD)" = "$TAP_REF"
-      - name: Build and verify production bottle
+      - name: Build or verify production bottle
         env:
           HOMEBREW_NO_AUTO_UPDATE: '1'
           HOMEBREW_NO_ANALYTICS: '1'
-        run: python3 scripts/verify-obey-voice.py --output "$GITHUB_WORKSPACE/bottle-evidence"
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_MODE: ${{ inputs.mode || 'build' }}
+        run: python3 scripts/verify-obey-voice.py --mode "$RELEASE_MODE" --output "$GITHUB_WORKSPACE/bottle-evidence"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

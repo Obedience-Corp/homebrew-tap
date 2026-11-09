@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import shutil
 import subprocess
 
@@ -21,7 +22,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(output):
+def verify(output, mode="build"):
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     env = dict(os.environ, HOME=str(output / "user"),
@@ -74,6 +75,50 @@ def verify(output):
             raise ValueError("user data changed or model files were added")
 
     run("brew", "audit", "--strict", "--formula", FORMULA)
+    if mode != "build":
+        target = {("Darwin", "arm64"): "arm64_sequoia",
+                  ("Linux", "x86_64"): "x86_64_linux"}[(platform.system(), platform.machine())]
+        entry = installed["bottle"]["stable"]["files"][target]
+        filename = f"obey-voice-{version}.{target}.bottle.tar.gz"
+        tag = f"obey-voice-v{version}"
+        expected_url = f"https://github.com/Obedience-Corp/homebrew-tap/releases/download/{tag}/{filename}"
+        if entry["url"] != expected_url:
+            raise ValueError("formula bottle URL does not match the release")
+        release = json.loads(run("gh", "release", "view", tag, "-R", "Obedience-Corp/homebrew-tap",
+                                 "--json", "isDraft"))
+        if mode == "public" and release["isDraft"]:
+            raise ValueError("cannot certify public installation from a draft release")
+        if mode == "verify":
+            # Authenticate only to read this repository's draft asset. The fresh
+            # public-mode cache below is deliberately never seeded.
+            downloaded = output / "download"
+            downloaded.mkdir()
+            run("gh", "release", "download", tag, "-R", "Obedience-Corp/homebrew-tap",
+                "--pattern", filename, "--dir", downloaded)
+            if digest(downloaded / filename) != entry["sha256"]:
+                raise ValueError("staged bottle differs from formula checksum")
+            cached = Path(run("brew", "--cache", "--force-bottle", "--formula", FORMULA))
+            cached.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(downloaded / filename, cached)
+        run("brew", "install", "--force-bottle", "--formula", FORMULA)
+        run("brew", "test", FORMULA)
+        prefix = Path(run("brew", "--prefix", FORMULA))
+        receipt = json.loads((prefix / "INSTALL_RECEIPT.json").read_text())
+        if not receipt.get("poured_from_bottle"):
+            raise ValueError("installation did not pour the release bottle")
+        preserved()
+        run("brew", "uninstall", "--force", "--formula", FORMULA)
+        preserved()
+        executable = Path(run("brew", "--prefix")) / "bin/obey-voice"
+        if prefix.exists() or executable.exists() or executable.is_symlink():
+            raise ValueError("uninstall left package-owned files")
+        evidence = {"version": version, "tap_commit": source_commit, "mode": mode,
+                    "sha256": entry["sha256"], "poured_from_bottle": True,
+                    "user_data_preserved": True, "uninstalled": True}
+        (output / "evidence.json").write_text(json.dumps(evidence, indent=2) + "\n")
+        print(json.dumps(evidence, indent=2))
+        shutil.rmtree(output / "cache", ignore_errors=True)
+        return
     # Fetch real public native assets; no upstream cache is seeded.
     run("brew", "install", "--build-bottle", "--formula", FORMULA)
     run("brew", "test", FORMULA)
@@ -123,4 +168,6 @@ def verify(output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
-    verify(parser.parse_args().output)
+    parser.add_argument("--mode", choices=("build", "verify", "public"), default="build")
+    args = parser.parse_args()
+    verify(args.output, args.mode)
