@@ -22,7 +22,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(output, mode="build"):
+def verify(output, mode="build", staged=None):
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=False)
     env = dict(os.environ, HOME=str(output / "user"),
@@ -84,22 +84,19 @@ def verify(output, mode="build"):
         expected_url = f"https://github.com/Obedience-Corp/homebrew-tap/releases/download/{tag}/{filename}"
         if entry["url"] != expected_url:
             raise ValueError("formula bottle URL does not match the release")
-        release = json.loads(run("gh", "release", "view", tag, "-R", "Obedience-Corp/homebrew-tap",
-                                 "--json", "isDraft"))
-        if mode == "public" and release["isDraft"]:
-            raise ValueError("cannot certify public installation from a draft release")
+        if mode == "public":
+            release = json.loads(run("gh", "release", "view", tag, "-R", "Obedience-Corp/homebrew-tap",
+                                     "--json", "isDraft"))
+            if release["isDraft"]:
+                raise ValueError("cannot certify public installation from a draft release")
         if mode == "verify":
-            # Authenticate only to read this repository's draft asset. The fresh
-            # public-mode cache below is deliberately never seeded.
-            downloaded = output / "download"
-            downloaded.mkdir()
-            run("gh", "release", "download", tag, "-R", "Obedience-Corp/homebrew-tap",
-                "--pattern", filename, "--dir", downloaded)
-            if digest(downloaded / filename) != entry["sha256"]:
+            # A separate no-checkout job reads the draft. Formula execution never
+            # receives its write-capable token. Public mode never seeds the cache.
+            if staged is None or digest(staged / filename) != entry["sha256"]:
                 raise ValueError("staged bottle differs from formula checksum")
             cached = Path(run("brew", "--cache", "--force-bottle", "--formula", FORMULA))
             cached.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(downloaded / filename, cached)
+            shutil.copyfile(staged / filename, cached)
         run("brew", "install", "--force-bottle", "--formula", FORMULA)
         run("brew", "test", FORMULA)
         prefix = Path(run("brew", "--prefix", FORMULA))
@@ -169,5 +166,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--mode", choices=("build", "verify", "public"), default="build")
+    parser.add_argument("--staged", type=Path, help="staged bottle artifacts from the download-only job")
     args = parser.parse_args()
-    verify(args.output, args.mode)
+    verify(args.output, args.mode, args.staged)
