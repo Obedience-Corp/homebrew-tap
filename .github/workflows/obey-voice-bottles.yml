@@ -43,13 +43,18 @@ jobs:
         with:
           python-version: '3.12'
       - uses: Homebrew/actions/setup-homebrew@63a2d4d8d4193eab3e62b1b782ff3ab8408f5b29
+        with:
+          stable: true
       - name: Install exact tap revision
+        env:
+          TAP_REF: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
+          # setup-homebrew installs this tap and links it to GITHUB_WORKSPACE.
+          # For PRs, replace its synthetic merge ref with the actual head commit.
           tap="$(brew --repository)/Library/Taps/obedience-corp/homebrew-tap"
-          mkdir -p "$(dirname "$tap")"
-          git clone --no-hardlinks "$GITHUB_WORKSPACE" "$tap"
-          git -C "$tap" remote set-url origin https://github.com/Obedience-Corp/homebrew-tap.git
-          test "$(git -C "$tap" rev-parse HEAD)" = "$(git rev-parse HEAD)"
+          git -C "$tap" fetch origin "$TAP_REF"
+          git -C "$tap" checkout --detach "$TAP_REF"
+          test "$(git -C "$tap" rev-parse HEAD)" = "$TAP_REF"
       - name: Build and verify production bottle
         env:
           HOMEBREW_NO_AUTO_UPDATE: '1'
