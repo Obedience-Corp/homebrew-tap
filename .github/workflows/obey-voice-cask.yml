@@ -7,6 +7,7 @@ on:
       - Casks/obey-voice-app.rb
       - scripts/verify-obey-voice-cask.py
       - scripts/test-obey-voice-cask.py
+      - scripts/fixture-obey-voice-cask.py
       - packaging/obey-voice-cask.json
       - .github/workflows/obey-voice-cask.yml
   workflow_dispatch:
@@ -51,6 +52,8 @@ jobs:
           git -C "$tap" fetch origin "$TAP_REF"
           git -C "$tap" checkout --detach "$TAP_REF"
           test "$(git -C "$tap" rev-parse HEAD)" = "$TAP_REF"
+      - name: Verify ad-hoc cask lifecycle with quarantined fixture
+        run: python3 scripts/fixture-obey-voice-cask.py
       - name: Audit and verify the published desktop app
         env:
           RELEASE_MODE: ${{ inputs.mode || 'verify' }}
@@ -58,7 +61,7 @@ jobs:
           if [[ -f Casks/obey-voice-app.rb ]]; then
             python3 scripts/verify-obey-voice-cask.py --mode "$RELEASE_MODE" --output "$RUNNER_TEMP/cask-evidence"
           elif [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
-            echo "Verification support only: first cask awaits a signed, notarized app release."
+            echo "Verification support only: first cask awaits a verified app release."
           else
             echo "No desktop cask exists; release verification cannot pass." >&2
             exit 1
