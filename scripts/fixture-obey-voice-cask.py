@@ -44,7 +44,7 @@ def main():
         c_source.write_text('int main(void) { return 0; }\n')
         command("clang", "-arch", "arm64", str(c_source), "-o", str(bundle / "Contents/MacOS/obey-voice-agent"))
         settings = home / ".config/obey-voice-fixture"
-        settings.parent.mkdir()
+        settings.parent.mkdir(exist_ok=True)
         settings.write_text("preserve settings\n")
         handler = functools.partial(SimpleHTTPRequestHandler, directory=str(root))
         server = ThreadingHTTPServer(("127.0.0.1", 0), handler)
