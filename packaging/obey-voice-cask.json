@@ -1,5 +1,6 @@
 {
-  "schema": 1,
+  "schema": 2,
   "workflow": "obey-voice-cask.yml",
-  "modes": ["verify", "public"]
+  "modes": ["verify", "public"],
+  "signing_modes": ["ad-hoc", "notarized"]
 }

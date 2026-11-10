@@ -30,28 +30,54 @@ def version(text):
     return match[1]
 
 
-def identity(bundle, expected, source):
+def signing_mode(text):
+    match = re.search(r"^# Signing mode: (.+)$", text, re.M)
+    mode = match[1] if match else "notarized"  # Legacy casks required notarization.
+    if mode not in ("ad-hoc", "notarized"):
+        raise ValueError("unsupported cask signing mode")
+    return mode
+
+
+def identity(bundle, expected, source, signing="notarized"):
     info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
     if (info.get("CFBundleIdentifier"), info.get("CFBundleShortVersionString"),
             info.get("CFBundleVersion"), info.get("LSMinimumSystemVersion")) != (BUNDLE_ID, expected, expected, "15.0"):
         raise ValueError("installed app identity/version/platform mismatch")
     provenance = json.loads((bundle / "Contents/Resources/release.json").read_text())
-    if provenance != {"version": "v" + expected, "source_sha": source, "platform": "macos-arm64"}:
+    required = {"version": "v" + expected, "source_sha": source, "platform": "macos-arm64"}
+    if "signing" in provenance or signing == "ad-hoc":
+        required.update(signing=signing, preview=False)
+    if provenance != required:
         raise ValueError("installed app does not match its public source tag")
 
 
-def verify(bundle, expected, source, env):
-    identity(bundle, expected, source)
+def verify(bundle, expected, source, env, signing="notarized"):
+    identity(bundle, expected, source, signing)
     command("codesign", "--verify", "--deep", "--strict", str(bundle))
     signature = subprocess.run(["codesign", "-dv", "--verbose=4", str(bundle)],
                                capture_output=True, text=True, check=True).stderr
-    if "Authority=Developer ID Application:" not in signature or "runtime" not in signature:
+    if signing == "ad-hoc":
+        if "Signature=adhoc" not in signature or "Authority=" in signature:
+            raise ValueError("desktop app is not ad-hoc signed as declared by its cask")
+        if not command("xattr", "-p", "com.apple.quarantine", str(bundle)):
+            raise ValueError("ad-hoc app lost its Homebrew quarantine attribute")
+        assessment = subprocess.run(["spctl", "--assess", "--type", "execute", "--verbose=2", str(bundle)],
+                                    capture_output=True, text=True, timeout=60)
+        if assessment.returncode != 3 or "rejected" not in assessment.stderr.lower():
+            raise ValueError("unexpected Gatekeeper result for ad-hoc app")
+        # Do not strip quarantine or approve the app on behalf of a user. Engine
+        # startup is checked in the archive build, before download quarantine.
+        return {"signature_verified": True, "gatekeeper_accepted": False,
+                "gatekeeper_approval_required": True, "engine_startup_checked": False}
+    if signing != "notarized" or "Authority=Developer ID Application:" not in signature or "runtime" not in signature:
         raise ValueError("desktop app is not signed with Developer ID and hardened runtime")
     command("xcrun", "stapler", "validate", str(bundle))
     command("spctl", "--assess", "--type", "execute", "--verbose=2", str(bundle))
     engine = bundle / "Contents/MacOS/obey-voice-engine"
     if "v" + expected not in command(str(engine), "--version", env=env).split():
         raise ValueError("installed desktop engine has wrong version")
+    return {"signature_verified": True, "gatekeeper_accepted": True,
+            "gatekeeper_approval_required": False, "engine_startup_checked": True}
 
 
 def main():
@@ -81,13 +107,14 @@ def main():
     cask = tap / "Casks/obey-voice-app.rb"
     desired = cask.read_text()
     expected = version(desired)
+    signing = signing_mode(desired)
     with urlopen(f"https://api.github.com/repos/Obedience-Corp/obey-voice/commits/v{expected}", timeout=60) as response:
         source = json.load(response)["sha"]
     fixtures = [home / ".obey/agents/voice/obey-voice/cask-fixture.json", home / ".cache/obey-voice/cask-fixture"]
     for path in fixtures:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text("preserve user data\n")
-    evidence = {"version": expected, "source_sha": source,
+    evidence = {"version": expected, "source_sha": source, "signing": signing,
                 "tap_commit": command("git", "-C", str(tap), "rev-parse", "HEAD"), "mode": args.mode}
     try:
         command("brew", "style", "--cask", TOKEN, env=env)
@@ -104,10 +131,10 @@ def main():
         else:
             command("brew", "install", "--cask", f"--appdir={apps}", TOKEN, env=env)
             evidence["upgraded_from"] = None
-        verify(apps / APP, expected, source, env)
-        evidence["installed_and_gatekeeper_accepted"] = True
+        evidence.update(verify(apps / APP, expected, source, env, signing))
+        evidence["installed"] = True
         command("brew", "reinstall", "--cask", f"--appdir={apps}", TOKEN, env=env)
-        verify(apps / APP, expected, source, env)
+        verify(apps / APP, expected, source, env, signing)
         evidence["reinstalled"] = True
         command("brew", "uninstall", "--cask", TOKEN, env=env)
         if (apps / APP).exists():
