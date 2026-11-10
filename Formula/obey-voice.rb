@@ -11,6 +11,12 @@ class ObeyVoice < Formula
   end
   license "AGPL-3.0-only"
 
+  bottle do
+    root_url "https://github.com/Obedience-Corp/homebrew-tap/releases/download/obey-voice-v0.3.2"
+    sha256 cellar: :any, arm64_sequoia: "16ba96913fe54eca9364be4577e841525a2f6d8a3e18c6e456518640be572b7c"
+    sha256 cellar: :any, x86_64_linux:  "27021fa0ff53baf6e28e54ebad6d4a3a276228ca8fe3f6a0637e855ebe0d6050"
+  end
+
   pour_bottle? do
     reason "Obey Voice requires glibc 2.39 or newer on Linux (Ubuntu 24.04 or newer)"
     satisfy { !OS.linux? || OS::Linux::Glibc.system_version >= "2.39" }
