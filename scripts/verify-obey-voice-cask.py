@@ -8,10 +8,10 @@ from pathlib import Path
 import plistlib
 import re
 import subprocess
-from urllib.request import urlopen
 
 
 TOKEN = "obedience-corp/tap/obey-voice-app"
+SOURCE = "https://github.com/Obedience-Corp/obey-voice.git"
 APP = "Obey Voice Agent.app"
 BUNDLE_ID = "com.obedience.voice-agent"
 
@@ -21,6 +21,20 @@ def command(*args, env=None):
     if result.returncode:
         raise RuntimeError(f"{args[0]} failed: {result.stderr.strip()}")
     return result.stdout.strip()
+
+
+def tag_commit(tag):
+    # Asked of the public git remote: the REST API refuses anonymous callers
+    # once a shared runner's address has used its hourly allowance.
+    refs = {}
+    for line in command("git", "ls-remote", SOURCE, f"refs/tags/{tag}", f"refs/tags/{tag}^{{}}").splitlines():
+        sha, _, ref = line.partition("\t")
+        refs[ref] = sha
+    # An annotated tag lists its commit under the peeled name.
+    sha = refs.get(f"refs/tags/{tag}^{{}}") or refs.get(f"refs/tags/{tag}", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise ValueError("release tag is not public")
+    return sha
 
 
 def version(text):
@@ -108,8 +122,7 @@ def main():
     desired = cask.read_text()
     expected = version(desired)
     signing = signing_mode(desired)
-    with urlopen(f"https://api.github.com/repos/Obedience-Corp/obey-voice/commits/v{expected}", timeout=60) as response:
-        source = json.load(response)["sha"]
+    source = tag_commit(f"v{expected}")
     fixtures = [home / ".obey/agents/voice/obey-voice/cask-fixture.json", home / ".cache/obey-voice/cask-fixture"]
     for path in fixtures:
         path.parent.mkdir(parents=True, exist_ok=True)

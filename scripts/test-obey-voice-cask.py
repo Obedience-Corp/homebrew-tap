@@ -37,6 +37,18 @@ class IdentityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "identity/version"):
             verify.identity(self.bundle, "0.3.2", "a" * 40)
 
+    def test_release_tag_resolves_to_its_commit_through_git(self):
+        tag, commit = "b" * 40, "a" * 40
+        annotated = f"{tag}\trefs/tags/v0.3.1\n{commit}\trefs/tags/v0.3.1^{{}}"
+        for listing, expected in ((annotated, commit), (f"{commit}\trefs/tags/v0.3.1", commit)):
+            with patch.object(verify, "command", return_value=listing) as command:
+                self.assertEqual(verify.tag_commit("v0.3.1"), expected)
+            self.assertEqual(command.call_args.args[:3], ("git", "ls-remote", verify.SOURCE))
+        for listing in ("", "not-a-sha\trefs/tags/v0.3.1"):
+            with patch.object(verify, "command", return_value=listing), \
+                    self.assertRaisesRegex(ValueError, "not public"):
+                verify.tag_commit("v0.3.1")
+
     def test_unversioned_cask_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "stable version"):
             verify.version('  version :latest')
