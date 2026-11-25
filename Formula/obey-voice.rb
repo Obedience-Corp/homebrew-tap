@@ -3,19 +3,13 @@ class ObeyVoice < Formula
   desc "Voice assistant for AI coding with local speech models"
   homepage "https://github.com/Obedience-Corp/obey-voice"
   if OS.mac?
-    url "https://github.com/Obedience-Corp/obey-voice/releases/download/v0.3.2/obey-voice-v0.3.2-macos-arm64.tar.gz"
-    sha256 "2c73c400dd74bd3ad0689a3256c1968dc8031a5633a8653f6058290ed0fdd5a8"
+    url "https://github.com/Obedience-Corp/obey-voice/releases/download/v0.4.0/obey-voice-v0.4.0-macos-arm64.tar.gz"
+    sha256 "a4849e49dded1a5caf653729148574bc5cf92e86899967f5e34d2d86314d9f2d"
   else
-    url "https://github.com/Obedience-Corp/obey-voice/releases/download/v0.3.2/obey-voice-v0.3.2-linux-amd64.tar.gz"
-    sha256 "e4e537448532e350d3b2d06c571ae0054e2626e21be9306fc11420f41bc94726"
+    url "https://github.com/Obedience-Corp/obey-voice/releases/download/v0.4.0/obey-voice-v0.4.0-linux-amd64.tar.gz"
+    sha256 "18e0890b7ea11068f83822e15c04a26ec24727519551eb6a1782f86915e0a839"
   end
   license "AGPL-3.0-only"
-
-  bottle do
-    root_url "https://github.com/Obedience-Corp/homebrew-tap/releases/download/obey-voice-v0.3.2"
-    sha256 cellar: :any, arm64_sequoia: "16ba96913fe54eca9364be4577e841525a2f6d8a3e18c6e456518640be572b7c"
-    sha256 cellar: :any, x86_64_linux:  "27021fa0ff53baf6e28e54ebad6d4a3a276228ca8fe3f6a0637e855ebe0d6050"
-  end
 
   pour_bottle? do
     reason "Obey Voice requires glibc 2.39 or newer on Linux (Ubuntu 24.04 or newer)"
