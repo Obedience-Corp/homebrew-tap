@@ -1,7 +1,7 @@
 # Signing mode: ad-hoc
 cask "obey-voice-app" do
-  version "0.3.2"
-  sha256 "03b4aa9fc5b4de804a4e27b2315cd41398fb45819a98c50ded2b4ca0d1da84f7"
+  version "0.4.0"
+  sha256 "c8af1611b1b891e28cadc00e33d26ea8f69a2011edd2771a296e686b857cc328"
 
   url "https://github.com/Obedience-Corp/obey-voice/releases/download/v#{version}/obey-voice-app-v#{version}-macos-arm64.zip"
   name "Obey Voice Agent"
